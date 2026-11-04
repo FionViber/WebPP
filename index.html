@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Protected Page</title>
-    <script type="module">function find(selector) {
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noindex, nofollow"><title>Protected Page</title><script type="module">function parse(s) { return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+function find(selector) {
     const element = document.querySelector(selector);
     if (element)
         return element;
@@ -99,6 +93,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         render();
         return;
     }
+    const payload = document.querySelector('pre[data-i]');
+    try {
+        if (!payload?.textContent)
+            throw new Error('Missing payload');
+        iterations = Number(payload.dataset.i);
+        const bytes = parse(payload.textContent.trim());
+        salt = bytes.slice(0, 32);
+        iv = bytes.slice(32, 48);
+        ciphertext = bytes.slice(48);
+    }
+    catch {
+        message = 'missingPayload';
+        render();
+        return;
+    }
     ready = true;
     render();
     pwd.focus();
@@ -115,25 +124,6 @@ async function decrypt() {
     render();
     await new Promise((resolve) => setTimeout(resolve, 60));
     try {
-        if (!ciphertext) {
-            const parts = [];
-            for (const path of ["payload/00.bin", "payload/01.bin", "payload/02.bin", "payload/03.bin", "payload/04.bin", "payload/05.bin", "payload/06.bin", "payload/07.bin", "payload/08.bin", "payload/09.bin"]) {
-                const response = await fetch(new URL(path, location.href));
-                if (!response.ok)
-                    throw new Error('Payload download failed');
-                parts.push(new Uint8Array(await response.arrayBuffer()));
-            }
-            const bytes = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
-            let offset = 0;
-            for (const part of parts) {
-                bytes.set(part, offset);
-                offset += part.length;
-            }
-            salt = bytes.subarray(0, 32);
-            iv = bytes.subarray(32, 48);
-            ciphertext = bytes.subarray(48);
-            iterations = 2000000;
-        }
         const decrypted = await decryptFile({ salt, iv, ciphertext, iterations }, pwd.value);
         document.write(decrypted);
         document.close();
@@ -165,28 +155,4 @@ async function decryptFile({ salt, iv, ciphertext, iterations, }, password) {
     // If no exception were thrown, decryption succeded and we can save the key.
     return decoder.decode(data);
 }
-</script>
-    <style>*,:before,:after{box-sizing:border-box;border:0}html{-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,Arial,sans-serif;line-height:1.5}body{line-height:inherit;margin:0}a{color:inherit;-webkit-text-decoration:inherit;text-decoration:inherit}button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inherit;margin:0;padding:0}button{text-transform:none;-webkit-appearance:button}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}p{margin:0}input::-moz-placeholder{opacity:1}input:-ms-placeholder-shown{opacity:1}input::-ms-input-placeholder{opacity:1}input::placeholder{opacity:1}:disabled{cursor:default}svg{vertical-align:middle;display:block}[hidden]{display:none}:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light;color:#202124;font-synthesis:none;-webkit-font-smoothing:antialiased;background:#f6f7f8;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif}body{min-width:280px;margin:0}main{min-height:100vh;align-items:center;justify-items:center;min-height:100svh;padding:88px 24px;display:grid}.box{background:#fff;border:1px solid #e7e9ec;border-radius:20px;width:100%;max-width:400px;padding:36px 32px 32px;box-shadow:0 4px 24px rgba(32,33,36,.016)}header{margin-bottom:28px}#msg{letter-spacing:-.025em;font-size:19px;font-weight:500;line-height:1.5}#msg.error{color:#bc3636}form{gap:12px;display:grid}.password-row{grid-template-columns:minmax(0,1fr) auto;gap:10px;display:grid}#pwd,#unlock,#toggle-password{border-radius:10px;width:100%;min-height:48px;font-family:inherit;font-size:15px;line-height:1.5;transition:border-color .15s,background-color .15s,box-shadow .15s}#pwd{color:#202124;background:#fff;border:1px solid #dfe2e6;padding:12px 14px;font-size:16px}#pwd::-ms-input-placeholder{color:#92979f;opacity:1}#pwd::placeholder{color:#92979f;opacity:1}#pwd:hover:not(:disabled){border-color:#b9bec6}#pwd:focus{border-color:#9098a3;outline:none;box-shadow:0 0 0 3px rgba(32,33,36,.035)}#pwd[aria-invalid=true]{border-color:#d89090}#unlock{color:#fff;cursor:pointer;background:#25272b;border:1px solid #25272b;padding:12px 16px;font-weight:500}#unlock:hover:not(:disabled){background:#3a3d43;border-color:#3a3d43}#unlock:active:not(:disabled){background:#151619}#unlock:disabled{opacity:.6;cursor:wait}#toggle-password{color:#39423d;cursor:pointer;background:#fff;border:1px solid #dfe2e6;min-width:76px;padding:12px 14px;font-size:13px;font-weight:500}#toggle-password:hover:not(:disabled){background:#f9faf9;border-color:#b9bec6}#toggle-password:disabled{opacity:.6;cursor:wait}#language{color:#61666e;cursor:pointer;background:#fff;border:1px solid #e2e5e9;border-radius:9px;max-width:calc(100% - 48px);min-height:36px;padding:6px 10px;font-family:inherit;font-size:13px;line-height:1.5;position:absolute;top:24px;right:24px}#unlock:focus-visible{outline-offset:3px;outline:2px solid #7c8796}#toggle-password:focus-visible{outline-offset:3px;outline:2px solid #7c8796}#language:focus-visible{outline-offset:3px;outline:2px solid #7c8796}.hidden{display:none!important}@media (max-width:480px){main{padding:80px 20px}.box{border-radius:16px;padding:30px 24px 24px}#msg{font-size:18px}#language{top:20px;right:20px}}@media (prefers-reduced-motion:reduce){#pwd,#unlock,#toggle-password{transition:none}}</style>
-</head>
-<body>
-    <select id="language" aria-label="Language">
-        <option value="en" lang="en">English</option>
-        <option value="zh-CN" lang="zh-CN">简体中文</option>
-    </select>
-    <main>
-        <div class="box">
-            <header>
-                <p id="msg" role="status" aria-live="polite">This page is password protected.</p>
-            </header>
-            <form>
-                <div class="password-row">
-                    <input type="password" id="pwd" name="pwd" aria-label="Password" placeholder="Password" autocomplete="current-password" spellcheck="false" disabled>
-                    <button id="toggle-password" type="button" aria-label="Show password" aria-pressed="false" disabled>Show</button>
-                </div>
-                <input id="unlock" type="submit" value="Unlock" disabled>
-            </form>
-        </div>
-    </main>
-    
-</body>
-</html>
+</script><style>*,:before,:after{box-sizing:border-box;border:0}html{-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,Arial,sans-serif;line-height:1.5}body{line-height:inherit;margin:0}a{color:inherit;-webkit-text-decoration:inherit;text-decoration:inherit}button,input{font-family:inherit;font-size:100%;line-height:inherit;color:inherit;margin:0;padding:0}button{text-transform:none;-webkit-appearance:button}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}p{margin:0}input::-moz-placeholder{opacity:1}input:-ms-placeholder-shown{opacity:1}input::-ms-input-placeholder{opacity:1}input::placeholder{opacity:1}:disabled{cursor:default}svg{vertical-align:middle;display:block}[hidden]{display:none}:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light;color:#202124;font-synthesis:none;-webkit-font-smoothing:antialiased;background:#f6f7f8;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Microsoft YaHei,sans-serif}body{min-width:280px;margin:0}main{min-height:100vh;align-items:center;justify-items:center;min-height:100svh;padding:88px 24px;display:grid}.box{background:#fff;border:1px solid #e7e9ec;border-radius:20px;width:100%;max-width:400px;padding:36px 32px 32px;box-shadow:0 4px 24px rgba(32,33,36,.016)}header{margin-bottom:28px}#msg{letter-spacing:-.025em;font-size:19px;font-weight:500;line-height:1.5}#msg.error{color:#bc3636}form{gap:12px;display:grid}.password-row{grid-template-columns:minmax(0,1fr) auto;gap:10px;display:grid}#pwd,#unlock,#toggle-password{border-radius:10px;width:100%;min-height:48px;font-family:inherit;font-size:15px;line-height:1.5;transition:border-color .15s,background-color .15s,box-shadow .15s}#pwd{color:#202124;background:#fff;border:1px solid #dfe2e6;padding:12px 14px;font-size:16px}#pwd::-ms-input-placeholder{color:#92979f;opacity:1}#pwd::placeholder{color:#92979f;opacity:1}#pwd:hover:not(:disabled){border-color:#b9bec6}#pwd:focus{border-color:#9098a3;outline:none;box-shadow:0 0 0 3px rgba(32,33,36,.035)}#pwd[aria-invalid=true]{border-color:#d89090}#unlock{color:#fff;cursor:pointer;background:#25272b;border:1px solid #25272b;padding:12px 16px;font-weight:500}#unlock:hover:not(:disabled){background:#3a3d43;border-color:#3a3d43}#unlock:active:not(:disabled){background:#151619}#unlock:disabled{opacity:.6;cursor:wait}#toggle-password{color:#39423d;cursor:pointer;background:#fff;border:1px solid #dfe2e6;min-width:76px;padding:12px 14px;font-size:13px;font-weight:500}#toggle-password:hover:not(:disabled){background:#f9faf9;border-color:#b9bec6}#toggle-password:disabled{opacity:.6;cursor:wait}#language{color:#61666e;cursor:pointer;background:#fff;border:1px solid #e2e5e9;border-radius:9px;max-width:calc(100% - 48px);min-height:36px;padding:6px 10px;font-family:inherit;font-size:13px;line-height:1.5;position:absolute;top:24px;right:24px}#unlock:focus-visible{outline-offset:3px;outline:2px solid #7c8796}#toggle-password:focus-visible{outline-offset:3px;outline:2px solid #7c8796}#language:focus-visible{outline-offset:3px;outline:2px solid #7c8796}.hidden{display:none!important}@media (max-width:480px){main{padding:80px 20px}.box{border-radius:16px;padding:30px 24px 24px}#msg{font-size:18px}#language{top:20px;right:20px}}@media (prefers-reduced-motion:reduce){#pwd,#unlock,#toggle-password{transition:none}}</style></head><body><select id=language aria-label=Language><option value=en lang=en>English</option><option value=zh-CN lang=zh-CN>简体中文</option></select><main><div class=box><header><p id=msg role=status aria-live=polite>This page is password protected.</p></header><form><div class=password-row><input type=password id=pwd name=pwd aria-label=Password placeholder=Password autocomplete=current-password spellcheck=false disabled> <button id=toggle-password type=button aria-label="Show password" aria-pressed=false disabled>Show</button></div><input id=unlock type=submit value=Unlock disabled></form></div></main><pre class="hidden" data-i="2e+6">pIoa8kEC6lPv8B/tJ50EKXa/k5Le4UnbyoICeOWEARpVCJYCyrIk+pOY9E6DRUPKJ1kS9RUkwqyBWsF8y5RDrBeqm0/8jcJ7j7vlyYZFTcWEyYWXgBrZqTgCPXIzOYJ09siJSX/sjsyoHpjIwmPOlsjgEac5jDH870QMSit7TSg9e5hUxVkfk0gaIq9JlqnPvi80KSTmtOoFPBsZ6RXlIefc05wZZYK4Pq+oJUwbL1TqtFG3x4iQt1mya3iZzIHNMVfThjVOe3bAC0CNvsNtRtX1yy5aA2JEe4EOeOV0YYC+FMdd4S1PN3YGWv42K9ctKavrxPd+Frezmb1QjmtUGv/XMPqR1icisAWI04QRziJwsKwaUaSp1OW3HgXKAXsIxSTaRt0+HzZ3UOrV2GBz9kS5an8mQ005tpFmMtfcjJmWHy3vbrJnJrH2hk1QpvfZXBWQXg+n0p2fzjTip1/r2xvunGUf7MVNPJ9ycOqWDkhSTJoOZrWHmEZlKiTdRz0BsXqC5BLKQuZ8o24+pYbzyTJ3akT3N6RYmPEg8zQCm18E8PX8iJmkiFIIoN3rmP1DV1N4/37NA63SlWhzQPtpSsO5p7hQJ/+vnZ6vkiHWvTYu78mV2iXUX4H1ZbgbQ5QvBVJ+i5cXN5xEMwzLFhhY8dpWonOxTyzezaSLpbE8SwH7c5J/xczTOdvG2n+g5qeA5Dmraw3JsqeQJ3Zs5MRr8h8rchzxaWLQYJeRPqMZVVxAPL2L/DxJ0FL7GnxocLZubCn2WCbs+HIt+GCAWdaaHet4FsQIbdLc3gxzlv3ViePTt3sJXtgTL5j2yzqIWBVNSyNi17dbzZhcoO/oUVEmyJltpX7LAKpHm8QYPvdoS8zkD12gvd2siQ9m+H+hX3Ai7rbC3DycjXluvK1Rxq5sW6vYHF0mDKGplAHklOiTTTToxqrjjfe38ByGdRYgrCjc5UZZK9CPomACEqModCaDhgrDJKbo6aNaC/RgcKRkm+s0Xu0Obc3zGIZuti3vO4fhYwuVHJ65VZti3wNzLIHuWBooWNx2+VGfSSWx3pYCEoWxQVmlw7o8ZQCkRrpM4bPduFrKadGDvEtGbznBwefJc8kxGATxduCVaZ+PWsCV/dV+YFx881wAfcRFVhqtEeE2hFFa0t2HTvlYVcOKSD+NJVJTzH3dSI7VT1SKHnGAfKoxZmPpKHbckDMOKgJFhDDP/gI/WfPADl/eyDEMs0O0mcFrR0r3LKqbOsoKaG186CVbNE6Tvjrde1QdF2stAyw+9a6z7zOfIHc9Q7iQE1S7YU7uw/fEHSRvY4tVMT1K7LJgs6II7Vd0WtNh2VmSrojSSWx5xqCcEZIXxrDUB92Kumw4RuOdoKGAgYwD5tFccuN6f1TaWr27xVoSzN6SjBLG4s42c/4MxffY84nUjIRD5LGQQnetjJrbd6MdXzhMmDu/nCMOJbByuQQBcwS4R4RG+rniaXEmLfm1vq6uYZARkwrzrctcW84x+hAFbiEpty9+oxGmvWFqIfas25sPhI4IK0CnUEoaJLfHhuadV4Ur9xpWOAC3uVF8Hd23xfBpQlcpJhgeHrZ6imdQXREAP4qWpOo9LnsU33x+6UR8FbOIk0eTB/NGWOXFgC7cWWbkHU/4/O3Wbi/ezIH/fapp9r3JPFEZhqoL5vgUN3c5SyLK+C0lgu7ExbEDOBQKeiF9jbua2W6MCiZayM/CUrXz1KzHp/l6KLWMfbPcm58jZmO6dCdbSjgSMtQpTegI7sEZ/c0X+EIb03ofyKhhf2avKPSWGOTYB57ctzI/fRCGTsTWMIKlgcM0Q7jwgCtDIDxN/cl9ljfKubdSvDmDAL2ioRBKy7LgDuLbl6JdPMIGHOT5tu/24jDZByz7rTfBOSZVdHbBjgUhsdKx/XpiEjWK2NJjygFl4NfeKlJBFpNKVJJRxYy0ZzS1R4nNt9yv/kQ=</pre></body></html>

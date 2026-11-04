@@ -2,4 +2,4 @@
 
 [Open WebPP](https://fionviber.github.io/WebPP/)
 
-Photopea in the browser. The original page is encrypted using PageCrypt 7.1.0 with AES-256-GCM and PBKDF2-SHA256 (2,000,000 iterations). Encrypted payload files are downloaded and combined when unlocking. No password or unencrypted application is included.
+Photopea in the browser. PageCrypt 7.1.0 protects the entry page; encrypted payload files are downloaded and combined after unlocking. The original application is preserved. No password or unencrypted application is included.
